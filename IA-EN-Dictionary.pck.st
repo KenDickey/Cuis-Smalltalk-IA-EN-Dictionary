@@ -1,8 +1,19 @@
-'From Cuis7.0 [latest update: #6454] on 29 June 2024 at 10:20:44 am'!
+'From Cuis7.0 [latest update: #6454] on 29 June 2024 at 3:42:39 pm'!
 'Description '!
-!provides: 'IA-EN-Dictionary' 1 1!
+!provides: 'IA-EN-Dictionary' 1 2!
+!requires: 'UI-Entry' 1 44 nil!
 SystemOrganization addCategory: #'IA-EN-Dictionary'!
 
+
+!classDefinition: #IEDictWindow category: #'IA-EN-Dictionary'!
+SystemWindow subclass: #IEDictWindow
+	instanceVariableNames: 'entryTextMorph resultMorph promptMorph'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'IA-EN-Dictionary'!
+!classDefinition: 'IEDictWindow class' category: #'IA-EN-Dictionary'!
+IEDictWindow class
+	instanceVariableNames: ''!
 
 !classDefinition: #IEDict category: #'IA-EN-Dictionary'!
 Object subclass: #IEDict
@@ -14,6 +25,12 @@ Object subclass: #IEDict
 IEDict class
 	instanceVariableNames: ''!
 
+
+!IEDictWindow commentStamp: '<historical>' prior: 0!
+GUI for Interlingua <--> English lookup
+
+	IEDictWindow open
+!
 
 !IEDict commentStamp: '<historical>' prior: 0!
 I embody a specialized Dictionary of Interlingua->English.
@@ -38,6 +55,56 @@ IEDict englishContains: 'day'.
 IEDict englishStarts: 'day'.
 
 IEDictWindow open. "-> opens a new IEDictWindow"!
+
+!IEDictWindow methodsFor: 'GUI building' stamp: 'KenD 6/29/2024 14:53:59'!
+buildMorphicWindow
+	"Build and lay out the window and answer it"
+	
+		^self layoutMorph 
+			beColumn; "the default"
+			separation: self defaultSeparation;
+			layoutSpec: LayoutSpec useAll;
+			addMorph: self makeEntryArea;
+			addMorph: self makeButtonArea;
+			addMorph: self makeResultsArea;
+			yourself! !
+
+!IEDictWindow methodsFor: 'GUI building' stamp: 'KenD 6/29/2024 15:37:22'!
+makeEntryArea
+	"Answer a LayoutMoph containing the prompt and text entry area"
+	
+	| entryLayout entryHeigth |
+	entryHeigth := self defaultSeparation * 2 + self textSizeUnit.
+	
+	entryLayout := LayoutMorph newRow.
+	
+	promptMorph := (LabelMorph contents: 'Enter Text: ') 
+					emphasis: AbstractFont boldCode; 
+					yourself.
+	promptMorph  layoutSpec: 
+		(LayoutSpec proportionalWidth: 0.3; 
+						fixedWidth: (promptMorph measureContents x)).
+			
+	entryTextMorph := (TextEntryMorph contents: 'salute'). "initial text"
+	entryTextMorph 
+		crAction: [self interlinguaContainsClick]; "Same action as IA-Contains button"
+		layoutSpec: 
+			(LayoutSpec proportionalWidth: 0.9).
+			
+	^ entryLayout 
+		separation: self defaultSeparation;
+		layoutSpec: (LayoutSpec proportionalWidth: 1 fixedHeight: entryHeigth);
+		addMorph: promptMorph;
+		addMorph: entryTextMorph;
+		axisEdgeWeight: #rowLeft
+		yourself! !
+
+!IEDictWindow class methodsFor: 'instance creation' stamp: 'KenD 6/29/2024 10:43:31'!
+open
+"
+	IEDictWindow open.
+"
+	^self open: (IEDict new) label: 'Interlingua <--> English'! !
 
 !IEDict class methodsFor: 'lookup' stamp: 'KenD 6/29/2024 10:14:35'!
 englishContains: aString
