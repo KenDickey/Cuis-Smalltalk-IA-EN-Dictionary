@@ -1,6 +1,6 @@
-'From Cuis7.0 [latest update: #6454] on 26 June 2024 at 12:43:28 pm'!
+'From Cuis7.0 [latest update: #6454] on 29 June 2024 at 10:20:44 am'!
 'Description '!
-!provides: 'IA-EN-Dictionary' 1 0!
+!provides: 'IA-EN-Dictionary' 1 1!
 SystemOrganization addCategory: #'IA-EN-Dictionary'!
 
 
@@ -38,3 +38,67 @@ IEDict englishContains: 'day'.
 IEDict englishStarts: 'day'.
 
 IEDictWindow open. "-> opens a new IEDictWindow"!
+
+!IEDict class methodsFor: 'lookup' stamp: 'KenD 6/29/2024 10:14:35'!
+englishContains: aString
+	"Answer all definition pairs which contain aString looking in the English side"
+
+	| matchStr |
+	matchStr :=  ('*' , aString , '*' ) .
+	
+	^DictData select: [ :pairArray | matchStr match: (pairArray at: 2) ]
+! !
+
+!IEDict class methodsFor: 'lookup' stamp: 'KenD 6/29/2024 10:14:55'!
+englishStarts: aString
+	"Answer all definition pairs which starts with aString looking in the English side"
+
+	| matchStr |
+	matchStr :=  aString , '*'  .
+	
+	^DictData select: [ :pairArray | matchStr match: (pairArray at: 2) ]
+! !
+
+!IEDict class methodsFor: 'lookup' stamp: 'KenD 6/29/2024 10:10:57'!
+interlinguaContains: aString
+	"Answer all definition pairs which contain aString looking in the Interlingua side"
+
+	| matchStr |
+	matchStr :=  ('*' , aString , '*' ) .
+	
+	^DictData select: [ :pairArray | matchStr match: (pairArray at: 1) ]
+! !
+
+!IEDict class methodsFor: 'lookup' stamp: 'KenD 6/29/2024 10:14:17'!
+interlinguaStarts: aString
+	"Answer all definition pairs which starts with aString looking in the Interlingua side"
+
+	| matchStr |
+	matchStr :=  aString , '*'  .
+	
+	^DictData select: [ :pairArray | matchStr match: (pairArray at: 1) ]
+! !
+
+!IEDict class methodsFor: 'class initialization' stamp: 'KenD 6/29/2024 10:01:58'!
+initialize
+	"Read in my data"
+"
+	IEDict initialize.
+"
+	| curIndex aLine |
+	DictData := Array new: 31034. "We know the exact size (wc -l iedict.txt) less 1"
+
+	(self package fullFileName asFileEntry parent  // 'iedict.txt') readStreamDo: [ :fileStream |
+		fileStream nextLine. "Skip initial comment line"
+		curIndex := 1.
+		aLine := fileStream nextLine. 
+		[aLine isNil] whileFalse: [
+			DictData at: curIndex 
+				  put: ((aLine findBetweenSubStrs: ':') 
+						collect: [:str| str withBlanksTrimmed]). 
+			aLine := fileStream nextLine. 
+			curIndex := 1 + curIndex.
+		]
+	] 
+! !
+IEDict initialize!
